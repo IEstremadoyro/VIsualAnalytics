@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTB-XL Visual Analytics</title>
+    <!-- Importar librería D3.js v7 -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Importar la hoja de estilos -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>Plataforma de Análisis: PTB-XL</h1>
+
+    <div id="dashboard">
+
+        <div id="macro-view" class="panel">
+            <h2>Nivel Macro: Demografía</h2>
+            <!-- Aquí irán los gráficos de barras interactivos (Edad y Sexo) -->
+        </div>
+
+        <div id="meso-view" class="panel">
+            <h2>Nivel Meso: Espacio Latente (Proyección UMAP)</h2>
+            <!-- Contenedor donde D3.js dibujará los puntos -->
+            <div id="scatter-plot"></div>
+        </div>
+
+        <div id="micro-view" class="panel">
+            <h2>Nivel Micro: Señales Fisiológicas</h2>
+            <!-- Contenedor donde se dibujarán las ondas del ECG -->
+            <div id="line-chart"></div>
+        </div>
+
+    </div>
+
+    <!-- Importar la lógica de visualización -->
+    <script src="app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTB-XL Visual Analytics</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="app-header">
+        <h1>PTB-XL <span>Visual Analytics</span></h1>
+        <p class="subtitle">Exploración jerárquica: población → espacio latente → señal ECG</p>
+    </header>
+
+    <div id="dashboard">
+        <section id="macro-view" class="panel">
+            <h2>1 · Macro · Distribución diagnóstica</h2>
+            <div class="macro-content">
+                <!-- El anillo se inserta aquí desde app.js -->
+            </div>
+        </section>
+
+        <section id="meso-view" class="panel">
+            <h2>2 · Meso · Espacio latente UMAP</h2>
+            <div id="scatter-plot"></div>
+            <div id="legend" class="legend"></div>
+        </section>
+
+        <section id="micro-view" class="panel">
+            <h2>3 · Micro · Señal ECG (Derivación I)</h2>
+            <div id="line-chart" class="line-chart-empty">
+                <p class="placeholder">Haz clic en cualquier punto del mapa UMAP para inspeccionar su ECG.</p>
+            </div>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

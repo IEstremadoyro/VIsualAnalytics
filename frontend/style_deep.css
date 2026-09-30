@@ -1,0 +1,222 @@
+:root {
+    --bg: #f4f6fa;
+    --surface: #ffffff;
+    --border: #e6e9f0;
+    --text: #1c2330;
+    --muted: #6b7280;
+    --accent: #3b6ef5;
+    --shadow-sm: 0 1px 2px rgba(16, 24, 40, .05);
+    --shadow-md: 0 4px 12px rgba(16, 24, 40, .08);
+    --shadow-lg: 0 10px 32px rgba(16, 24, 40, .10);
+    --radius: 14px;
+    --radius-sm: 8px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Helvetica, Arial, sans-serif;
+    background:
+        radial-gradient(1200px 600px at 10% -10%, #e7efff 0%, transparent 60%),
+        radial-gradient(900px 500px at 110% 10%, #ffe9e7 0%, transparent 55%),
+        var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 28px 24px 60px;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Header ---------- */
+.app-header {
+    max-width: 1400px;
+    margin: 0 auto 24px;
+}
+
+.app-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.app-header h1 span {
+    font-weight: 400;
+    color: var(--muted);
+}
+
+.app-header .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 6px 0 0;
+}
+
+/* ---------- Grid del dashboard ---------- */
+#dashboard {
+    display: grid;
+    grid-template-columns: 340px minmax(0, 1fr);
+    grid-template-areas:
+        "macro meso"
+        "micro micro";
+    gap: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+#macro-view {
+    grid-area: macro;
+}
+
+#meso-view {
+    grid-area: meso;
+}
+
+#micro-view {
+    grid-area: micro;
+}
+
+@media (max-width: 1080px) {
+    #dashboard {
+        grid-template-columns: 1fr;
+        grid-template-areas: "macro" "meso" "micro";
+    }
+}
+
+/* ---------- Paneles ---------- */
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow-md);
+    transition: box-shadow .25s ease;
+}
+
+.panel:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.panel h2 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 16px;
+}
+
+/* ---------- Macro: anillo ---------- */
+.macro-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.macro-wrapper svg {
+    width: 100%;
+    height: auto;
+    max-width: 260px;
+}
+
+/* ---------- Meso: canvas + ejes ---------- */
+#scatter-plot {
+    margin: 0 auto;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background:
+        linear-gradient(0deg, rgba(0, 0, 0, .02), rgba(0, 0, 0, .02));
+}
+
+#scatter-plot svg text {
+    font-size: 11px;
+    fill: var(--muted);
+    font-family: inherit;
+}
+
+#scatter-plot .tick line {
+    stroke: #eef1f6;
+}
+
+/* ---------- Micro: señal ---------- */
+.line-chart-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+    color: var(--muted);
+}
+
+.placeholder {
+    font-size: 14px;
+    margin: 0;
+}
+
+#line-chart .grid line {
+    stroke: #eef1f6;
+    shape-rendering: crispEdges;
+}
+
+#line-chart .grid path {
+    display: none;
+}
+
+#line-chart .ecg-title {
+    font-size: 13px;
+    font-weight: 600;
+    fill: var(--text);
+}
+
+#line-chart .error {
+    color: #d7263d;
+    text-align: center;
+    padding: 24px;
+    font-size: 14px;
+}
+
+/* ---------- Tooltip ---------- */
+.tooltip {
+    position: fixed;
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.35;
+    background: rgba(20, 25, 35, .95);
+    color: #fff;
+    border-radius: 8px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .15s ease;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
+    backdrop-filter: blur(4px);
+    z-index: 10;
+}
+
+.tooltip .tt-sub {
+    color: #c7cbd4;
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+/* ---------- Leyenda (para insertar desde JS si quieres) ---------- */
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.legend .item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend .swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(0, 0, 0, .06);
+}
