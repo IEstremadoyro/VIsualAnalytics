@@ -22,7 +22,7 @@ proyecto_visual_analytics/
 ├── data/
 │   ├── ptbxl_limpio_con_umap.csv   # Dataset procesado con coordenadas UMAP
 │   ├── modelo_ptbxl_fourier.pth    # Pesos del modelo entrenado
-│   └── records100/                 # (Opcional) Señales crudas WFDB descargadas de PhysioNet
+│   └── records100/                 # Señales crudas WFDB (PTB-XL)
 ├── requirements.txt         # Dependencias de Python
 └── README.md
 ```

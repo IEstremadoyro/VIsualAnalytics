@@ -10,9 +10,6 @@ ENV/
 env.bak/
 venv.bak/
 
-# Dataset de registros masivos ECG (596MB, ~43,600 archivos)
-data/records100/
-
 # OS specific files
 .DS_Store
 .DS_Store?
