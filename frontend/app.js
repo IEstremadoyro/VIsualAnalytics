@@ -3,7 +3,6 @@ const W = 1000, H = 600;
 const M = { top: 20, right: 20, bottom: 40, left: 50 };
 const R = 2.5;
 
-// NUEVO: Paleta dinámica para manejar múltiples combinaciones
 const coloresBase = {
     'NORM': '#1a9850',
     'MI': '#d73027',
@@ -62,8 +61,18 @@ function iniciarScatter(data) {
 
     canvas.addEventListener("mousemove", e => {
         const r = canvas.getBoundingClientRect();
-        const k = W / r.width;
-        const d = quadtree.find((e.clientX - r.left) * k, (e.clientY - r.top) * k, 8);
+
+        // CORRECCIÓN MATEMÁTICA: Compensar los márgenes de 'object-fit: contain'
+        const scale = Math.min(r.width / W, r.height / H);
+        const offsetX = (r.width - W * scale) / 2;
+        const offsetY = (r.height - H * scale) / 2;
+
+        // Calcular la coordenada exacta restando el margen y dividiendo por la escala
+        const mouseX = (e.clientX - r.left - offsetX) / scale;
+        const mouseY = (e.clientY - r.top - offsetY) / scale;
+
+        const d = quadtree.find(mouseX, mouseY, 8);
+
         const nuevo = d && visible(d) ? d : null;
         if (nuevo !== hover) { hover = nuevo; draw(); }
         if (nuevo) {
@@ -75,6 +84,7 @@ function iniciarScatter(data) {
         }
         canvas.style.cursor = nuevo ? "pointer" : "default";
     });
+
     canvas.addEventListener("mouseleave", () => { hover = null; tooltip.style("opacity", 0); draw(); });
     canvas.addEventListener("click", () => { if (hover) cargarSenal(hover); });
 }
@@ -132,29 +142,6 @@ async function cargarSenal(d) {
     }
 }
 
-/* ---------- MICRO: señal ECG ---------- */
-async function cargarSenal(d) {
-    seleccionado = d; draw();
-    const cont = d3.select("#line-chart");
-    cont.html('<p class="estado">Cargando señal…</p>');
-    abortSenal?.abort();
-    abortSenal = new AbortController();
-    try {
-        let m = cacheSenales.get(d.patient_id);
-        if (!m) {
-            const r = await fetch(`${API}/api/pacientes/${d.patient_id}/senal`, { signal: abortSenal.signal });
-            if (!r.ok) throw new Error((await r.json()).detail || r.status);
-            m = await r.json();
-            cacheSenales.set(d.patient_id, m);
-        }
-        dibujarSenal(m, colorPathology(d.diagnostico));
-    } catch (err) {
-        if (err.name === "AbortError") return;
-        cont.html(`<p class="estado error">Error: ${err.message}</p>`);
-    }
-}
-
-/* ---------- MICRO: señal ECG ---------- */
 function dibujarSenal(data, color) {
     const senal = data.time_series.derivacion_I;
     const cont = d3.select("#line-chart");
@@ -165,7 +152,6 @@ function dibujarSenal(data, color) {
     const x = d3.scaleLinear().domain([0, senal.length - 1]).range([m.left, lw - m.right]);
     const y = d3.scaleLinear().domain(d3.extent(senal)).nice().range([lh - m.bottom, m.top]);
 
-    // Cuadrícula y ejes
     svg.append("g").attr("class", "grid").attr("transform", `translate(${m.left},0)`)
         .call(d3.axisLeft(y).ticks(6).tickSize(-(lw - m.left - m.right)))
         .call(g => g.select(".domain").remove());
@@ -173,7 +159,6 @@ function dibujarSenal(data, color) {
     svg.append("g").attr("transform", `translate(0,${lh - m.bottom})`)
         .call(d3.axisBottom(x).tickValues(d3.range(0, senal.length, 100)).tickFormat(d => (d / 100) + " s"));
 
-    // Trazado de la onda
     const path = svg.append("path")
         .datum(senal)
         .attr("fill", "none")
@@ -185,25 +170,22 @@ function dibujarSenal(data, color) {
     const totalLength = path.node().getTotalLength();
     let isAnimated = true;
 
-    // Lógica del monitor (10 segundos reales)
     function iniciarAnimacion() {
         path.attr("stroke-dasharray", totalLength + " " + totalLength)
             .attr("stroke-dashoffset", totalLength)
             .transition()
-            .duration(10000) // 10 segundos exactos (10,000 ms)
+            .duration(10000)
             .ease(d3.easeLinear)
             .attr("stroke-dashoffset", 0)
             .on("end", iniciarAnimacion);
     }
 
-    // Lógica de visualización estática (Muestra todo el trazado de golpe)
     function detenerAnimacion() {
-        path.interrupt() // Detiene la transición actual de D3
-            .attr("stroke-dasharray", "none") // Elimina el punteado
+        path.interrupt()
+            .attr("stroke-dasharray", "none")
             .attr("stroke-dashoffset", null);
     }
 
-    // Botón interactivo Pausa/Reproducir
     const btnControl = svg.append("g")
         .attr("transform", `translate(${lw - m.right - 100}, 12)`)
         .style("cursor", "pointer")
@@ -236,10 +218,8 @@ function dibujarSenal(data, color) {
         .style("user-select", "none")
         .text("⏸ Pausar ECG");
 
-    // Disparamos la animación al cargar
     iniciarAnimacion();
 
-    // Título clínico
     svg.append("text").attr("class", "titulo-senal").attr("x", lw / 2).attr("y", 22)
         .attr("text-anchor", "middle")
         .text(`Paciente ${data.patient_id} · ${data.diagnostico} · Derivación I (mV)`);

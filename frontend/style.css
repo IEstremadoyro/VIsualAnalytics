@@ -16,15 +16,23 @@ body {
     background: var(--bg);
     color: var(--text);
     margin: 0;
-    padding: 24px;
+    padding: 20px;
+    height: 100vh;
+    /* Fija la altura al 100% de la ventana */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Elimina el scroll vertical de toda la página */
 }
 
 h1 {
     text-align: center;
-    font-size: 1.7rem;
+    font-size: 1.6rem;
     font-weight: 600;
     letter-spacing: -0.02em;
-    margin: 0 0 24px;
+    margin: 0 0 20px;
+    flex: none;
+    /* Evita que el título se aplaste */
 }
 
 h2 {
@@ -33,78 +41,99 @@ h2 {
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--muted);
-    margin: 0 0 14px;
+    margin: 0 0 10px;
+    flex: none;
 }
 
+/* GRID DEFINITIVO: MACRO (IZQ), MESO (ARRIBA DER), MICRO (ABAJO DER) */
 #dashboard {
     display: grid;
-    grid-template-columns: 340px 1fr;
+    grid-template-columns: 320px 1fr;
+    grid-template-rows: 1fr 35vh;
+    /* El mapa toma el espacio superior, el ECG toma el 35% de la pantalla abajo */
     grid-template-areas:
-        "macro micro"
-        "meso  meso";
-    gap: 20px;
-    max-width: 1400px;
+        "macro meso"
+        "macro micro";
+    gap: 16px;
+    width: 100%;
+    max-width: 1600px;
     margin: 0 auto;
+    flex: 1;
+    /* Toma todo el espacio disponible debajo del título */
+    min-height: 0;
+}
+
+.panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    /* Crítico para que los gráficos no desborden la grilla */
 }
 
 #macro-view {
     grid-area: macro;
-}
-
-#micro-view {
-    grid-area: micro;
+    overflow-y: auto;
 }
 
 #meso-view {
     grid-area: meso;
 }
 
-.panel {
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
-    min-width: 0;
+#micro-view {
+    grid-area: micro;
 }
 
-/* Scatter: canvas + ejes SVG superpuestos */
+/* Ajustes Responsivos para el Nivel Meso (Canvas + SVG) */
 #scatter-plot {
     position: relative;
-    line-height: 0;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-#scatter-plot canvas {
+#scatter-plot canvas,
+#scatter-plot .overlay {
+    position: absolute;
     width: 100%;
-    height: auto;
-    display: block;
+    height: 100%;
+    object-fit: contain;
+    /* Escala los puntos y ejes manteniendo la proporción */
 }
 
 #scatter-plot .overlay {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
     pointer-events: none;
-    font-size: 12px;
-    line-height: normal;
 }
 
-/* Señal ECG */
+/* Ajustes Responsivos para el Nivel Micro (ECG) */
+#line-chart {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 #line-chart svg {
     width: 100%;
-    height: auto;
-    display: block;
+    height: 100%;
 }
 
 #line-chart:empty::before {
     content: "Haz clic en un punto del mapa UMAP para ver su señal";
     display: block;
-    padding: 70px 0;
     text-align: center;
     color: var(--muted);
+    margin: auto;
 }
 
+/* Estilos estéticos de D3.js */
 .grid .tick line {
     stroke: #eef0f3;
 }
@@ -117,26 +146,25 @@ h2 {
 
 .estado {
     text-align: center;
-    padding: 70px 20px;
+    margin: auto;
     color: var(--muted);
-    margin: 0;
 }
 
 .estado.error {
     color: #c0392b;
 }
 
-/* Donut y leyenda */
+/* Donut y leyenda (Nivel Macro) */
 .hint {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--muted);
     text-align: center;
-    margin: 0 0 8px;
+    margin: 0 0 12px;
 }
 
 .donut {
     width: 100%;
-    max-width: 260px;
+    max-width: 240px;
     display: block;
     margin: 0 auto;
 }
@@ -162,18 +190,18 @@ h2 {
 .leyenda {
     list-style: none;
     padding: 0;
-    margin: 14px 0 0;
-    font-size: 13px;
+    margin: 16px 0 0;
+    font-size: 12px;
 }
 
 .leyenda li {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 5px 6px;
+    padding: 6px;
     border-radius: 6px;
     cursor: pointer;
-    transition: background 0.15s, opacity 0.15s;
+    transition: background 0.15s;
 }
 
 .leyenda li:hover {
@@ -193,6 +221,9 @@ h2 {
 
 .leyenda .lbl {
     flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .leyenda .cnt {
@@ -213,11 +244,4 @@ h2 {
     opacity: 0;
     transition: opacity 0.12s;
     z-index: 10;
-}
-
-@media (max-width: 900px) {
-    #dashboard {
-        grid-template-columns: 1fr;
-        grid-template-areas: "macro" "micro" "meso";
-    }
 }
