@@ -24,3 +24,7 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# Large data files (>100MB exceeds GitHub standard limit)
+data/senales_filtradas.npy
+data/senales_norm_f16.npy

@@ -2,41 +2,151 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PTB-XL Visual Analytics</title>
-    <!-- Importar librería D3.js v7 -->
+    <!-- Tipografía moderna para Dashboards -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/static/style.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <!-- Importar la hoja de estilos -->
-    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <h1>Plataforma de Análisis: PTB-XL</h1>
-
-    <div id="dashboard">
-
-        <div id="macro-view" class="panel">
-            <h2>Nivel Macro: Demografía</h2>
-            <!-- Aquí irán los gráficos de barras interactivos (Edad y Sexo) -->
+    <header class="top">
+        <div class="top-titles">
+            <h1>Plataforma de Análisis Clínico: PTB-XL</h1>
+            <p>Visual Analytics de Riesgo Cardiológico y Comorbilidades Frontaleras</p>
         </div>
-
-        <div id="meso-view" class="panel">
-            <h2>Nivel Meso: Espacio Latente (Proyección UMAP)</h2>
-            <!-- Contenedor donde D3.js dibujará los puntos -->
-            <div id="scatter-plot"></div>
+        <div class="buscador">
+            <input id="buscar" type="number" placeholder="ECG ID" aria-label="ECG ID">
+            <button id="btn-buscar">Inspeccionar</button>
+            <button id="btn-frontera" title="Selecciona al azar un MI de la cohorte actual que el modelo no reconoce">
+                Descubrir Caso Frontera
+            </button>
         </div>
+    </header>
 
-        <div id="micro-view" class="panel">
-            <h2>Nivel Micro: Señales Fisiológicas</h2>
-            <!-- Contenedor donde se dibujarán las ondas del ECG -->
-            <div id="line-chart"></div>
-        </div>
+    <main class="layout">
+        <!-- MACRO -->
+        <aside class="panel macro">
+            <h2>Nivel Macro · Cohortes</h2>
 
-    </div>
+            <div class="filtro">
+                <label>Conjunto de datos</label>
+                <div id="f-split" class="seg">
+                    <button data-v="all">Todos</button>
+                    <button data-v="train">Train</button>
+                    <button data-v="val">Val</button>
+                    <button data-v="test" class="on">Test</button>
+                </div>
+            </div>
 
-    <!-- Importar la lógica de visualización -->
-    <script src="app.js"></script>
+            <div class="filtro">
+                <label for="f-sexo">Sexo</label>
+                <select id="f-sexo">
+                    <option value="all">Todos los pacientes</option>
+                    <option value="0">Hombres</option>
+                    <option value="1">Mujeres</option>
+                </select>
+            </div>
+
+            <div class="filtro">
+                <label>Rango de Edad: <span id="v-edad" class="badge-edad">0–90+</span></label>
+                <div class="range-sliders">
+                    <input id="f-emin" type="range" min="0" max="90" value="0" autocomplete="off">
+                    <input id="f-emax" type="range" min="0" max="90" value="90" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="filtro">
+                <label class="check">
+                    <input id="f-front" type="checkbox" autocomplete="off">
+                    <span>Solo MI mal clasificados</span>
+                </label>
+            </div>
+
+            <div class="divider"></div>
+
+            <div id="donut"></div>
+            <ul id="leyenda-donut" class="lista"></ul>
+            <p id="stats" class="stats"></p>
+        </aside>
+
+        <section class="col">
+            <!-- MESO -->
+            <div class="panel meso">
+                <div class="cabecera">
+                    <h2>Nivel Meso · Espacio Latente Contrastivo</h2>
+                    <div class="ctrl">
+                        <select id="s-proy" aria-label="Proyección">
+                            <option value="umap">UMAP</option>
+                            <option value="tsne">t-SNE</option>
+                        </select>
+                        <select id="s-color" aria-label="Colorear por">
+                            <option value="label">Color: Etiqueta Real</option>
+                            <option value="pred">Color: Predicción IA</option>
+                            <option value="ambig">Color: Acuerdo con vecinos</option>
+                        </select>
+                        <button id="btn-reset" class="btn-outline">Restablecer Zoom</button>
+                    </div>
+                </div>
+                <p id="aviso" class="aviso"></p>
+                <div id="scatter-wrap">
+                    <canvas id="scatter"></canvas>
+                    <div id="tip" class="tip"></div>
+                </div>
+                <div id="leyenda-meso" class="leyenda"></div>
+            </div>
+
+            <!-- MICRO -->
+            <div class="panel micro">
+                <h2>Nivel Micro · Perfil Fisiológico Asistido por IA</h2>
+                <div id="vacio" class="vacio">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 8px; color: var(--muted);">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        <line x1="11" y1="8" x2="11" y2="14"></line>
+                        <line x1="8" y1="11" x2="14" y2="11"></line>
+                    </svg><br>
+                    Haz clic en un punto del mapa UMAP para inspeccionar la señal del paciente.
+                </div>
+
+                <div id="detalle" class="cuerpo" hidden>
+                    <div class="ficha">
+                        <h3 id="f-titulo"></h3>
+                        <p id="f-meta" class="meta"></p>
+                        <div id="f-badges" class="badges"></div>
+
+                        <h4 class="sub-title">Certeza Predictiva</h4>
+                        <div id="f-probs"></div>
+
+                        <div class="divider"></div>
+                        <p id="f-knn" class="knn"></p>
+                        <div id="f-vecinos" class="chips"></div>
+                    </div>
+
+                    <div class="ecgcol">
+                        <div class="ecg-ctrl">
+                            <select id="s-lead" aria-label="Derivación"></select>
+                            <label class="check">
+                                <input id="c-atn" type="checkbox" checked>
+                                <span>Mostrar Mapa de Calor (Atención Temporal)</span>
+                            </label>
+                        </div>
+                        <div id="ecg-wrap"><svg id="ecg"></svg></div>
+                        <p class="nota">Señal filtrada 0,5–40 Hz en mV. La IA resalta en rojo las morfologías anómalas
+                            que influyeron en su predicción final. Desliza la rueda del ratón para hacer zoom sobre la
+                            onda.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="/static/app.js"></script>
 </body>
 
 </html>
